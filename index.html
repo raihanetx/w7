@@ -1539,6 +1539,93 @@ src="https://www.facebook.com/tr?id=482675157669768&ev=PageView&noscript=1"
             box-shadow: 0 4px 12px rgba(143, 135, 241, 0.3);
         }
         /* --- END OF MODIFIED REVIEW FORM STYLES --- */
+
+        /* --- START OF NEW REVIEW MODAL STYLES --- */
+        .review-input-section {
+            display:flex; align-items:center;
+            padding:15px 0; margin: 0 0 20px 0;
+        }
+
+        .user-avatar {
+            width:40px; height:40px; border-radius:50%;
+            background: #e9ecef url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%236c757d" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M12 14c-5 0-9 2.5-9 5v1h18v-1c0-2.5-4-5-9-5z"/></svg>') no-repeat center/60%;
+            display:flex; align-items:center; justify-content:center;
+            margin-right:15px;
+        }
+
+        .comment-box {
+            flex:1; background:#f8f9fa; border:1px solid #e9ecef; border-radius:20px;
+            padding:10px 15px; color:#6c757d; cursor:pointer; transition:all 0.2s;
+        }
+        .comment-box:hover { background:#e9ecef; border-color:#dee2e6; }
+        .comment-box:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .modal-overlay {
+            position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.4); display:none; align-items:center; justify-content:center;
+            z-index:1000; opacity:0; visibility:hidden;
+            transition:opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.active { display:flex; opacity:1; visibility:visible; }
+
+        .review-modal {
+            background: var(--background-color); border-radius:12px; width:90%; max-width:500px; padding:30px;
+            position:relative; box-shadow:0 15px 35px rgba(0,0,0,0.2);
+            transform:translateY(-50px) scale(0.9); opacity:0;
+            transition:all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-overlay.active .review-modal { transform:translateY(0) scale(1); opacity:1; }
+
+        .review-modal .form-group { margin-bottom:20px; }
+        .review-modal .form-group label { display:block; margin-bottom:8px; font-weight:600; color:#495057; }
+        .review-modal .form-group input, .review-modal .form-group textarea {
+            width:100%; padding:12px; border:1px solid #ced4da; border-radius:8px; font-size:16px;
+            transition:border-color 0.3s;
+        }
+        .review-modal .form-group input:focus, .review-modal .form-group textarea:focus {
+            outline:none; border-color:var(--primary-color); box-shadow:none;
+        }
+        .review-modal .form-group textarea { height:100px; resize:vertical; }
+
+        .review-modal .star-rating {
+            display:flex;
+            justify-content:flex-start;
+            gap:5px;
+        }
+        .review-modal .star-rating input { display:none; }
+        .review-modal .star-rating label {
+            font-size:28px; color:#ddd; cursor:pointer; transition:color 0.2s;
+        }
+        .review-modal .star-rating input:checked ~ label,
+        .review-modal .star-rating label:hover,
+        .review-modal .star-rating label:hover ~ label {
+            color: #ffc107;
+        }
+        .review-modal .star-rating input:checked + label ~ label {
+             color: #ddd;
+        }
+
+        .review-modal .modal-buttons { display:flex; gap:10px; margin-top:25px; }
+        .review-modal .submit-btn, .review-modal .cancel-btn {
+            flex:1; border:none; padding:14px; border-radius:8px; font-size:16px; font-weight:600;
+            cursor:pointer; transition:all 0.3s ease; color:white;
+        }
+        .review-modal .submit-btn { background-color: var(--primary-color); }
+        .review-modal .submit-btn:hover { background-color: var(--primary-color); filter: brightness(0.9); transform:translateY(-2px); }
+        .review-modal .cancel-btn { background-color:#6c757d; }
+        .review-modal .cancel-btn:hover { background-color:#5a6268; transform:translateY(-2px); }
+
+        .review-modal .close-modal {
+            position:absolute; top:15px; right:15px; background:none; border:none; font-size:24px;
+            color:#6c757d; cursor:pointer; width:30px; height:30px;
+            display:flex; align-items:center; justify-content:center; border-radius:50%;
+            transition:background 0.2s;
+        }
+        .review-modal .close-modal:hover { background:#f8f9fa; }
+        /* --- END OF NEW REVIEW MODAL STYLES --- */
         /* --- END OF FILE style.css --- */
     </style>
 </head>
@@ -2177,6 +2264,39 @@ src="https://www.facebook.com/tr?id=482675157669768&ev=PageView&noscript=1"
     </div>
 
     <div id="toast" class="toast"></div>
+
+    <!-- Review Modal -->
+    <div class="modal-overlay" id="review-modal">
+        <div class="review-modal">
+            <button class="close-modal" onclick="closeReviewModal()">×</button>
+
+            <div class="form-group">
+                <label for="review-name">Your Name</label>
+                <input type="text" id="review-name" placeholder="Enter your name">
+            </div>
+
+            <div class="form-group">
+                <label>Rating</label>
+                <div class="star-rating" id="star-rating">
+                    <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
+                    <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
+                    <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
+                    <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
+                    <input type="radio" id="star5" name="rating" value="5"><label for="star5">★</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="review-text">Your Review</label>
+                <textarea id="review-text" placeholder="Share your experience with this product..."></textarea>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="cancel-btn" onclick="closeReviewModal()">Cancel</button>
+                <button class="submit-btn" onclick="submitReview()">Submit</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // --- START OF FILE script.js ---
@@ -3281,94 +3401,22 @@ Microsoft-এর অফিসিয়াল Activation Key, ইমেইলে ড
             setupImageLoading();
         }
 
-function setupReviewFormListeners(productId) {
-    const form = document.getElementById('add-review-form');
-    if (!form || parseInt(form.dataset.productId) !== productId) return;
-
-    const ratingContainer = form.querySelector('.star-rating-input');
-    const stars = ratingContainer.querySelectorAll('.fa-star');
-    const ratingInput = form.querySelector('#review-rating-value');
-    let currentRating = 0;
-
-    const highlightStars = (value) => {
-        stars.forEach(s => {
-            s.className = `fa-star ${s.dataset.value <= value ? 'fas' : 'far'}`;
-        });
-    };
-
-    ratingContainer.addEventListener('mouseleave', () => {
-        highlightStars(currentRating);
-    });
-
-    stars.forEach(star => {
-        star.addEventListener('mouseover', function() {
-            highlightStars(this.dataset.value);
-        });
-
-        star.addEventListener('click', function() {
-            currentRating = this.dataset.value;
-            ratingInput.value = currentRating;
-            highlightStars(currentRating); // Keep them highlighted after click
-        });
-    });
-
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const author = this.elements.author.value.trim();
-        const rating = parseInt(ratingInput.value, 10);
-        const text = this.elements.text.value.trim();
-
-        if (!author || !rating || !text) {
-            showToast('Please fill all fields and provide a rating.', 'error');
-            return;
-        }
-
-        const productIndex = allProductsData.findIndex(p => p.id === productId);
-        if (productIndex === -1) {
-            showToast('Could not find product to add review to.', 'error');
-            return;
-        }
-
-        const product = allProductsData[productIndex];
-
-        const newReview = {
-            id: Date.now(),
-            author: author,
-            date: new Date().toISOString().split('T')[0],
-            rating: rating,
-            text: text,
-            avatar: null
-        };
-
-        if (!product.reviews) {
-            product.reviews = [];
-        }
-        // Add to the beginning of the array so it shows up first
-        product.reviews.unshift(newReview);
-
-        renderReviews(product); // Re-render the reviews section
-
-        const reviewTabButton = document.querySelector('.tab-link[onclick*="reviewsTab"]');
-        if(reviewTabButton) {
-            reviewTabButton.textContent = `Reviews (${product.reviews.length})`;
-        }
-
-        showToast('Thank you! Your review has been submitted.', 'success');
-
-        // Reset form
-        form.reset();
-        currentRating = 0;
-        ratingInput.value = 0;
-        highlightStars(0);
-    });
-}
-
 function renderReviews(product) {
     const reviewsTab = document.getElementById('reviewsTab');
     if (!reviewsTab) return;
 
+    reviewsTab.innerHTML = ''; // Clear previous content
+
+    const reviewInputHTML = `
+        <div class="review-input-section">
+            <div class="user-avatar"></div>
+            <div class="comment-box" tabindex="0" onclick="openReviewModal(${product.id})">Write a review...</div>
+        </div>
+    `;
+    reviewsTab.insertAdjacentHTML('beforeend', reviewInputHTML);
+
     if (!product.reviews || product.reviews.length === 0) {
-        reviewsTab.innerHTML = '<p style="padding: 1rem 0; text-align: center; color: #777;">There are no reviews for this product yet.</p>';
+        reviewsTab.insertAdjacentHTML('beforeend', '<p style="padding: 1rem 0; text-align: center; color: #777;">There are no reviews for this product yet. Be the first to write one!</p>');
         return;
     }
 
@@ -3413,7 +3461,6 @@ function renderReviews(product) {
         reviewsContainer.appendChild(reviewElement);
     });
 
-    reviewsTab.innerHTML = ''; // Clear previous content
     reviewsTab.appendChild(reviewsContainer);
 
     if (allReviews.length > reviewsToShow) {
@@ -3430,38 +3477,6 @@ function renderReviews(product) {
         };
         reviewsTab.appendChild(seeMoreBtn);
     }
-
-    const formHTML = `
-        <div class="add-review-form-container">
-            <h3 class="add-review-title">Leave Your Review</h3>
-            <form id="add-review-form" data-product-id="${product.id}">
-                <div class="review-form-grid">
-                    <div class="form-group form-group-name">
-                        <label for="review-author-name" class="visually-hidden">Your Name</label>
-                        <input type="text" id="review-author-name" name="author" required placeholder="Your Name *">
-                    </div>
-                    <div class="form-group form-group-rating">
-                        <label class="visually-hidden">Your Rating</label>
-                        <div class="star-rating-input">
-                            <i class="far fa-star" data-value="1" title="Poor"></i>
-                            <i class="far fa-star" data-value="2" title="Fair"></i>
-                            <i class="far fa-star" data-value="3" title="Good"></i>
-                            <i class="far fa-star" data-value="4" title="Very Good"></i>
-                            <i class="far fa-star" data-value="5" title="Excellent"></i>
-                        </div>
-                        <input type="hidden" name="rating" id="review-rating-value" value="0">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="review-text" class="visually-hidden">Your Review</label>
-                    <textarea id="review-text" name="text" rows="3" required placeholder="Share your experience... *"></textarea>
-                </div>
-                <button type="submit" class="submit-review-btn">Post Review</button>
-            </form>
-        </div>
-    `;
-    reviewsTab.insertAdjacentHTML('beforeend', formHTML);
-    setupReviewFormListeners(product.id);
 }
 
         function showProductDetail(productId) {
@@ -3753,6 +3768,114 @@ function toggleSeeMore(btn, seeLess) {
             updateOrdersNotification();
             window.addEventListener('hashchange', () => handleHashChange(false)); 
         });
+
+        // --- START OF NEW REVIEW MODAL SCRIPT ---
+        function openReviewModal(productId) {
+            const modal = document.getElementById('review-modal');
+            if (modal) {
+                modal.dataset.productId = productId;
+                modal.classList.add('active');
+            }
+        }
+
+        function closeReviewModal() {
+            const modal = document.getElementById('review-modal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        function submitReview() {
+            const modal = document.getElementById('review-modal');
+            if (!modal) return;
+
+            const productId = parseInt(modal.dataset.productId, 10);
+            const name = document.getElementById('review-name').value.trim();
+            const ratingInput = document.querySelector('input[name="rating"]:checked');
+            const reviewText = document.getElementById('review-text').value.trim();
+
+            if (!name || !ratingInput || !reviewText) {
+                showToast('Please fill in all fields and select a rating.', 'error');
+                return;
+            }
+
+            const rating = parseInt(ratingInput.value, 10);
+            const productIndex = allProductsData.findIndex(p => p.id === productId);
+
+            if (productIndex === -1) {
+                showToast('Could not submit review. Product not found.', 'error');
+                return;
+            }
+
+            const product = allProductsData[productIndex];
+
+            const newReview = {
+                id: Date.now(),
+                author: name,
+                date: new Date().toISOString().split('T')[0],
+                rating: rating,
+                text: reviewText,
+                avatar: null
+            };
+
+            if (!product.reviews) {
+                product.reviews = [];
+            }
+
+            product.reviews.unshift(newReview);
+
+            renderReviews(product);
+
+            const reviewTabButton = document.querySelector('.tab-link[onclick*="reviewsTab"]');
+            if(reviewTabButton) {
+                reviewTabButton.textContent = `Reviews (${product.reviews.length})`;
+            }
+
+            showToast('Thank you! Your review has been submitted.', 'success');
+            closeReviewModal();
+
+            // Reset form fields
+            document.getElementById('review-name').value = '';
+            document.getElementById('review-text').value = '';
+            const checkedRating = document.querySelector('input[name="rating"]:checked');
+            if (checkedRating) checkedRating.checked = false;
+            document.querySelectorAll("#star-rating label").forEach(l => l.classList.remove("selected"));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const reviewModal = document.getElementById('review-modal');
+            const starRatingContainer = document.getElementById('star-rating');
+
+            if (reviewModal) {
+                reviewModal.addEventListener('click', function(e) {
+                    if (e.target === this) closeReviewModal();
+                });
+            }
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && reviewModal && reviewModal.classList.contains('active')) {
+                    closeReviewModal();
+                }
+            });
+
+            if (starRatingContainer) {
+                const labels = starRatingContainer.querySelectorAll('label');
+                labels.forEach(label => {
+                    label.addEventListener('click', () => {
+                        labels.forEach(l => l.classList.remove('selected'));
+                        let currentLabel = label;
+                        while(currentLabel) {
+                            currentLabel.classList.add('selected');
+                            currentLabel = currentLabel.previousElementSibling;
+                            if (currentLabel && currentLabel.tagName !== 'LABEL') {
+                                currentLabel = currentLabel.previousElementSibling;
+                            }
+                        }
+                    });
+                });
+            }
+        });
+        // --- END OF NEW REVIEW MODAL SCRIPT ---
         // --- END OF FILE script.js ---
     </script>
 </body>
